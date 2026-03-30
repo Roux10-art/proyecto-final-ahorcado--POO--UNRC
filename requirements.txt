@@ -1,0 +1,8 @@
+# Interfaz visual y tablas en terminal
+rich==13.7.1
+
+# Generación de títulos en arte ASCII
+art==6.1
+
+# Manejo de variables de entorno (opcional, muy útil para el futuro)
+python-dotenv==1.0.1
