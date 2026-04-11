@@ -1,90 +1,154 @@
-import os
-from art import tprint
-from rich.console import Console
-from rich.panel import Panel
-from rich.table import Table
-from rich.prompt import Prompt, IntPrompt, Confirm
+import customtkinter as ctk
+
+# Constantes de diseño
+FUENTE_APP = "Segoe UI"
+FUENTE_MONO = "Consolas"
+
+# Configuración global de Windows 11
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("blue")
 
 
-console = Console()
+class Interfaz(ctk.CTk):
+    def __init__(self, callback_adivinar, callback_inicio):
+        super().__init__()
 
+        self.title("Ahorcado POO - UNRC")
+        self.geometry("800x600")
 
-class Interfaz:
-    def __init__(self):
-        self.console = console
+        # Callbacks para comunicarse con MotorJuego
+        self.callback_adivinar = callback_adivinar
+        self.callback_inicio = callback_inicio
+
+        # Contenedor principal
+        self.container = ctk.CTkFrame(self, corner_radius=15)
+        self.container.pack(padx=20, pady=20, fill="both", expand=True)
+
+        self.setup_pantalla_inicio()
 
     def limpiar_pantalla(self):
-        # comando para Windows (cls) o Linux/Mac (clear)
-        os.system("cls" if os.name == "nt" else "clear")
+        """En GUI, esto significa destruir los widgets actuales del contenedor."""
+        for widget in self.container.winfo_children():
+            widget.destroy()
 
-    def mostrar_bienvenida(self):
+    def setup_pantalla_inicio(self):
         self.limpiar_pantalla()
-        # 'art' genera el título ASCII gigante
-        tprint("AHORCADO  POO", font="small")
-        self.console.print(
-            Panel(
-                "[bold white]Bienvenido al reto final de 4to Semestre[/bold white]",
-                style="on blue",
-                expand=False,
-            )
+
+        ctk.CTkLabel(
+            self.container, text="AHORCADO POO", font=(FUENTE_APP, 36, "bold")
+        ).pack(pady=30)
+        ctk.CTkLabel(
+            self.container, text="Reto Final - 4to Semestre", font=(FUENTE_APP, 16)
+        ).pack()
+
+        self.entry_nombre = ctk.CTkEntry(
+            self.container, placeholder_text="Tu nombre aquí...", width=300, height=40
         )
+        self.entry_nombre.pack(pady=20)
 
-    def pedir_nombre(self):
-        return Prompt.ask("[bold green]¿Cuál es tu nombre, jugador?[/bold green]")
+        # NUEVO: Permitir que la tecla Enter también funcione
+        self.entry_nombre.bind("<Return>", self.procesar_inicio)
 
-    def seleccionar_categoria(self):
-        self.console.print("\n[bold yellow]Selecciona una categoría:[/bold yellow]")
-        self.console.print("1. Países\n2. Animales\n3. Alimentos\n4. Películas")
+        ctk.CTkButton(
+            self.container, text="Continuar", command=self.procesar_inicio, height=40
+        ).pack(pady=10)
 
-        opcion = IntPrompt.ask("Elige un número", choices=["1", "2", "3", "4"])
-        categorias = {1: "paises", 2: "animales", 3: "alimentos", 4: "peliculas"}
-        return categorias[opcion]
+    def procesar_inicio(self, event=None):
+        nombre = self.entry_nombre.get().strip()
+
+        # Esto se imprimirá en la terminal de fondo
+        print(f"[DEBUG] Botón presionado. Nombre capturado: '{nombre}'")
+
+        if nombre:
+            print("[DEBUG] Nombre válido. Cambiando a pantalla de categorías...")
+            self.nombre_jugador = nombre
+            self.seleccionar_categoria(nombre)
+        else:
+            print("[DEBUG] El nombre estaba vacío.")
+            self.entry_nombre.configure(
+                placeholder_text="¡Por favor, escribe tu nombre!",
+                placeholder_text_color="#ff6b6b",
+            )
+
+    def seleccionar_categoria(self, nombre):
+        self.limpiar_pantalla()
+        ctk.CTkLabel(
+            self.container,
+            text=f"Hola {nombre}, elige una categoría:",
+            font=(FUENTE_APP, 20),
+        ).pack(pady=20)
+
+        categorias = [
+            ("Países", "paises"),
+            ("Animales", "animales"),
+            ("Alimentos", "alimentos"),
+            ("Películas", "peliculas"),
+        ]
+
+        for texto, valor in categorias:
+            ctk.CTkButton(
+                self.container,
+                text=texto,
+                width=200,
+                command=lambda v=valor: self.callback_inicio(v),
+            ).pack(pady=5)
 
     def mostrar_escenario(self, progreso, intentos, usadas):
-
-        # tabla de estado y la palabra oculta
         self.limpiar_pantalla()
-        tprint("JUGANDO", font="minis")
 
-        # tabla de información
-        tabla = Table(show_header=True, header_style="bold magenta")
-        tabla.add_column("Intentos Restantes", justify="center")
-        tabla.add_column("Letras Probadas", justify="center")
+        # Layout de juego: Izquierda (Dibujo/Info) - Derecha (Palabra/Input)
+        main_frame = ctk.CTkFrame(self.container, fg_color="transparent")
+        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-        col_intentos = (
-            f"[bold red]{intentos}[/bold red]" if intentos < 3 else str(intentos)
+        # Sección de Palabra (usamos la constante de fuente monoespaciada)
+        self.lbl_palabra = ctk.CTkLabel(
+            main_frame, text=progreso, font=(FUENTE_MONO, 45, "bold")
         )
-        tabla.add_row(col_intentos, ", ".join(usadas))
+        self.lbl_palabra.pack(pady=40)
 
-        self.console.print(tabla)
+        # Info de intentos
+        self.lbl_info = ctk.CTkLabel(
+            main_frame,
+            text=f"Intentos: {intentos} | Usadas: {', '.join(usadas)}",
+            font=(FUENTE_APP, 14),
+        )
+        self.lbl_info.pack(pady=10)
 
-        # mostrar el progreso de la palabra (ej: A _ _ O)
-        self.console.print(
-            f"\n[bold cyan]PALABRA:[/bold cyan] [white]{progreso}[/white]\n"
+        # Entrada de letra
+        self.input_letra = ctk.CTkEntry(
+            main_frame,
+            width=60,
+            placeholder_text="A",
+            font=(FUENTE_APP, 20),
+            justify="center",
+        )
+        self.input_letra.pack(pady=10)
+        self.input_letra.bind("<Return>", lambda event: self.enviar_letra())
+
+        ctk.CTkButton(main_frame, text="Adivinar", command=self.enviar_letra).pack(
+            pady=10
         )
 
-    def pedir_letra(self):
-        return Prompt.ask("[bold green]Ingresa una letra[/bold green]").upper()
+    def enviar_letra(self):
+        letra = self.input_letra.get().upper()
+        self.input_letra.delete(0, "end")
+        if len(letra) == 1 and letra.isalpha():
+            self.callback_adivinar(letra)
 
     def mostrar_resultado(self, gano, palabra_secreta):
-        if gano:
-            self.console.print(
-                Panel(
-                    f"[bold green]¡FELICIDADES! Has adivinado: {palabra_secreta}[/bold green]"
-                )
-            )
-        else:
-            self.console.print(
-                Panel(
-                    f"[bold red]GAME OVER. La palabra era: {palabra_secreta}[/bold red]"
-                )
-            )
+        self.limpiar_pantalla()
+        color = "#28a745" if gano else "#dc3545"
+        texto = "¡VICTORIA!" if gano else "GAME OVER"
 
-    def pedir_reintentar(self):
-        return Confirm.ask(
-            "[bold green]¿Quieres jugar de nuevo? [/bold green]",
-            default=True,
-        )
+        ctk.CTkLabel(
+            self.container, text=texto, font=(FUENTE_APP, 40, "bold"), text_color=color
+        ).pack(pady=30)
+        ctk.CTkLabel(
+            self.container,
+            text=f"La palabra era: {palabra_secreta}",
+            font=(FUENTE_APP, 18),
+        ).pack(pady=10)
 
-    def mostrar_despedida(self):
-        self.console.print("[bold green]¡Hasta luego! [/bold green]")
+        ctk.CTkButton(
+            self.container, text="Jugar de nuevo", command=self.setup_pantalla_inicio
+        ).pack(pady=20)

@@ -1,6 +1,8 @@
-# 🎮 Proyecto: El Ahorcado POO (Terminal Pro Edition)
+# 🎮 Proyecto: El Ahorcado POO (GUI Edition)
 
-¡Bienvenidos al equipo! Este es un entorno de desarrollo profesional donde aplicaremos **POO Avanzada** y **Persistencia de Datos** para crear una versión de consola de "El Ahorcado" digna de 4.º semestre.
+¡Bienvenidos al equipo!
+
+Este es un entorno de desarrollo profesional donde aplicaremos **POO Avanzada** y **Persistencia de Datos** para crear una versión gráfica de "El Ahorcado" digna de 4.º semestre.
 
 ---
 
@@ -8,7 +10,7 @@
 
 _Mantenemos nuestras reglas de oro para que el código se explique solo:_
 
-- **Importaciones:** ` from src.gestor_datos import GestorDatos
+- **Importaciones:** `from src.gestor_datos import GestorDatos`
 
 ## ⚠️ Prohibiciones de Nomenclatura
 
@@ -41,15 +43,25 @@ _Seguiremos el flujo de **Fork & Pull Request** para proteger la rama `main`:_
 - `/src/`: Clases del sistema (`palabra.py`, `jugador.py`, `interfaz.py`, etc.).
 - `main.py`: Punto de entrada del programa.
 
+## Archivos que NO se deben modificar
+
+- `main.py`
+- `requirements.txt`
+- `README.md`
+- `.gitignore`
+- `setup.bat`
+- `data/`
+- `venv/`
+
 ---
 
 ## 🖥️ Instalación vía terminal
 
-1. `py -m venv venv`
+1. `py -m venv venv` o `python -m venv venv`
 2. Activar: `.\venv\Scripts\activate` (Windows)
 3. Activar: `source venv/bin/activate` (Mac/Linux)
-4. Instalar dependencias: `pip install -r requirements.txt` (Instala la librería **Rich**)
-5. **Ejecutar:** py main.py o python main.py
+4. Instalar dependencias: `pip install -r requirements.txt` (Instala la librería **CustomTkinter**)
+5. **Ejecutar:** `py main.py` o `python main.py`
 
 ## 🖥️ Instalación via script (opcion recomendada para windows)
 
