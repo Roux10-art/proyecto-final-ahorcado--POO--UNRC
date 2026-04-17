@@ -24,6 +24,9 @@ class Interfaz(ctk.CTk):
         self.callback_adivinar = callback_adivinar
         self.callback_inicio = callback_inicio
 
+        # nombre del jugador en la pantalla
+        self.nombre_jugador = None
+
         # tamaño del contenedor de la app
         self.container = ctk.CTkFrame(self, corner_radius=15)
         self.container.pack(padx=20, pady=20, fill="both", expand=True)
@@ -67,6 +70,9 @@ class Interfaz(ctk.CTk):
     # procesa el nombre ingresado por el usuario para iniciar el juego
     def procesar_inicio(self, event=None):
         nombre = self.entry_nombre.get().strip()
+        if nombre:
+            self.nombre_jugador = nombre
+            self.seleccionar_categoria(self.nombre_jugador)
 
         # esto se imprimirá en la terminal de fondo
         print(f"[DEBUG] Botón presionado. Nombre capturado: '{nombre}'")
@@ -120,11 +126,20 @@ class Interfaz(ctk.CTk):
         main_frame = ctk.CTkFrame(self.container, fg_color="transparent")
         main_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
+        # nombre del jugador en la parte pantalla
+        ctk.CTkLabel(
+            main_frame,
+            text=f"Jugador: {self.nombre_jugador}",
+            font=(FUENTE_APP, 16, "italic"),
+            text_color="gray",
+        ).pack(pady=(0, 10))
+
         # seccion de palabra (usamos la constante de fuente monoespaciada)
         if isinstance(progreso, list):
             texto_progreso = " ".join(progreso)
         else:
             texto_progreso = progreso
+
         # ajusta el tamaño de la fuente segun la longitud de la palabra
         tamanio_fuente = 45 if len(texto_progreso) < 20 else 28
 
@@ -177,10 +192,12 @@ class Interfaz(ctk.CTk):
         self.limpiar_pantalla()
         color = "#28a745" if gano else "#dc3545"
         texto = "¡VICTORIA!" if gano else "GAME OVER"
+
         # titulo de la pantalla de resultados
         ctk.CTkLabel(
             self.container, text=texto, font=(FUENTE_APP, 40, "bold"), text_color=color
         ).pack(pady=30)
+
         # palabra secreta
         ctk.CTkLabel(
             self.container,
@@ -190,5 +207,12 @@ class Interfaz(ctk.CTk):
 
         # boton de jugar de nuevo
         ctk.CTkButton(
-            self.container, text="Jugar de nuevo", command=self.setup_pantalla_inicio
+            self.container, text="Jugar de nuevo", command=self.reintentar_juego
         ).pack(pady=20)
+
+    # permite que el usuario vuelva a jugar
+    def reintentar_juego(self):
+        if self.nombre_jugador:
+            self.seleccionar_categoria(self.nombre_jugador)
+        else:
+            self.setup_pantalla_inicio()
